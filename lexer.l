@@ -2,6 +2,7 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include "parser.tab.h"
 
 int line_number = 1;
 
@@ -44,8 +45,8 @@ number          {digit}+
 "["             { return LSBRACK; }
 "]"             { return RSBRACK; }
 
-{identifier}    { return ID; }
-{number}        { return NUMBER; }
+{identifier} { yylval.string = strdup(yytext); return ID; }
+{number} { yylval.number = atoi(yytext); return NUM; }
 
 "//".*          { /* Ignorar o comentário de linha única */ }
 
@@ -69,15 +70,9 @@ number          {digit}+
 
 [ \t]+          { /* Ignorar espaços e tabulações */ }
 
-
-.               { return yytext; //retorna o caracter q deu erro conforme foi especificado}
+. { fprintf(stderr, "Erro léxico: caractere inválido '%s' na linha %d\n", yytext, line_number); return ERROR; }
 
 %%
-
-int main(void) {
-    yylex();  // Chama o lexer
-    return 0;
-}
 
 int get_token(void) {
     return yylex();  // Função auxiliar para retornar tokens ao parser

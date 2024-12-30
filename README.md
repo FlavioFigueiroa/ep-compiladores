@@ -1,11 +1,13 @@
-# EP - Primeira Parte
+# EP - Segunda parte - Parser
 
 Como compilar
 ```bash
-flex lexer_test_version.l 
-gcc lex.yy.c -o lexer -lm 
+bison -d parser.y
+flex lexer.l  
+gcc -o parser parser.tab.c lex.yy.c ast.c -lm
 ```
 
 Como executar os testes no windows:
 ```bash
-Get-Content .\test-lexer\prg7.c- | .\lexer.exe   
+Get-Content .\teste.c- | .\parser.exe 
+Get-Content .\test-lexer\prg1.c- | .\parser.exe

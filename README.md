@@ -1,13 +1,11 @@
-# ep-compiladores
+# EP - Primeira Parte
 
-Como compilar o projeto:
-
+Como compilar
 ```bash
-flex lexer.l  
-bison -d parser.y  
-gcc -o parser parser.tab.c lex.yy.c ast.c globals.c -lm   
+flex lexer_test_version.l 
+gcc lex.yy.c -o lexer -lm 
 ```
 
 Como executar os testes no windows:
 ```bash
-Get-Content ..\tests\prg1.c- | .\parser.exe    
+Get-Content .\test-lexer\prg7.c- | .\lexer.exe   

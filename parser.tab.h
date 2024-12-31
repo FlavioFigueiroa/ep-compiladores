@@ -62,26 +62,29 @@ extern int yydebug;
     RETURN = 263,                  /* RETURN  */
     ID = 264,                      /* ID  */
     NUM = 265,                     /* NUM  */
-    PLUS = 266,                    /* PLUS  */
-    MINUS = 267,                   /* MINUS  */
-    MULT = 268,                    /* MULT  */
-    DIV = 269,                     /* DIV  */
-    ASSIGN = 270,                  /* ASSIGN  */
-    EQ = 271,                      /* EQ  */
-    LT = 272,                      /* LT  */
-    LE = 273,                      /* LE  */
-    GT = 274,                      /* GT  */
-    GE = 275,                      /* GE  */
-    NEQ = 276,                     /* NEQ  */
-    LPAREN = 277,                  /* LPAREN  */
-    RPAREN = 278,                  /* RPAREN  */
-    LBRACE = 279,                  /* LBRACE  */
-    RBRACE = 280,                  /* RBRACE  */
-    SEMI = 281,                    /* SEMI  */
-    COMMA = 282,                   /* COMMA  */
-    LSBRACK = 283,                 /* LSBRACK  */
-    RSBRACK = 284,                 /* RSBRACK  */
-    ERROR = 285                    /* ERROR  */
+    FOR = 266,                     /* FOR  */
+    PLUS = 267,                    /* PLUS  */
+    MINUS = 268,                   /* MINUS  */
+    MULT = 269,                    /* MULT  */
+    DIV = 270,                     /* DIV  */
+    ASSIGN = 271,                  /* ASSIGN  */
+    DECREMENT = 272,               /* DECREMENT  */
+    INCREMENT = 273,               /* INCREMENT  */
+    EQ = 274,                      /* EQ  */
+    LT = 275,                      /* LT  */
+    LE = 276,                      /* LE  */
+    GT = 277,                      /* GT  */
+    GE = 278,                      /* GE  */
+    NEQ = 279,                     /* NEQ  */
+    LPAREN = 280,                  /* LPAREN  */
+    RPAREN = 281,                  /* RPAREN  */
+    LBRACE = 282,                  /* LBRACE  */
+    RBRACE = 283,                  /* RBRACE  */
+    SEMI = 284,                    /* SEMI  */
+    COMMA = 285,                   /* COMMA  */
+    LSBRACK = 286,                 /* LSBRACK  */
+    RSBRACK = 287,                 /* RSBRACK  */
+    ERROR = 288                    /* ERROR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -90,13 +93,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 27 "parser.y"
+#line 28 "parser.y"
 
     struct ASTNode *node;
     char *string;
     int number;
 
-#line 100 "parser.tab.h"
+#line 103 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

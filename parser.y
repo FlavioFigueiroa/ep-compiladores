@@ -11,17 +11,18 @@ extern ASTNode *root;
 %}
 
 /* Definição de tokens */
-%token INT VOID IF ELSE WHILE RETURN ID NUM
-%token PLUS MINUS MULT DIV ASSIGN
+%token INT VOID IF ELSE WHILE RETURN ID NUM FOR
+%token PLUS MINUS MULT DIV ASSIGN DECREMENT INCREMENT
 %token EQ LT LE GT GE NEQ
 %token LPAREN RPAREN LBRACE RBRACE SEMI COMMA
 %token LSBRACK RSBRACK ERROR
 
 %define parse.error verbose
 
-%left PLUS MINUS
+%right MINUS PLUS
 %left MULT DIV
 %left LT GT LE GE
+
 
 /* Tipos de dados para a AST */
 %union {
@@ -31,7 +32,7 @@ extern ASTNode *root;
 }
 
 /* Associe os tipos dos símbolos aos campos no %union */
-%type <node> params program decl_list decl stmt_list stmt expr cond loop block
+%type <node> param param_list params program decl_list decl stmt_list stmt expr cond loop block array_access
 %type <string> type_specifier ID
 %type <number> NUM
 
@@ -74,6 +75,27 @@ params:
     | /* vazio */ {
         $$ = NULL;  // Nenhum parâmetro
     }
+    | param_list {
+        $$ = $1;  // Lista de parâmetros fornecida
+    }
+;
+
+param_list:
+    param_list COMMA param {
+        $$ = appendNode($1, $3);
+    }
+    | param {
+        $$ = $1;
+    }
+;
+
+param:
+    type_specifier ID {
+        $$ = createNode("param", createLeaf("type", $1), createLeaf("id", $2));
+    }
+    | type_specifier ID LSBRACK RSBRACK {
+        $$ = createNode("param-array", createLeaf("type", $1), createLeaf("id", $2));
+    }
 ;
 
 type_specifier:
@@ -87,6 +109,12 @@ stmt_list:
     }
     | stmt {
         $$ = $1;
+    }
+    | decl {
+        $$ = $1;  // Aceitar declarações no contexto de stmt_list
+    }
+    | /* vazio */ {
+        $$ = NULL;
     }
 ;
 
@@ -115,6 +143,12 @@ loop:
     WHILE LPAREN expr RPAREN stmt {
         $$ = createNode("while", $3, $5);
     }
+    | FOR LPAREN expr SEMI expr SEMI expr RPAREN stmt {
+        ASTNode *initNode = createNode("init", $3, NULL);
+        ASTNode *condNode = createNode("condition", $5, NULL);
+        ASTNode *updateNode = createNode("update", $7, NULL);
+        $$ = createNode("for", initNode, createNode("for-body", condNode, createNode("update", updateNode, $9)));
+    }
 ;
 
 block:
@@ -123,6 +157,13 @@ block:
     }
     | LBRACE RBRACE {
         $$ = createNode("block", NULL, NULL);  // Bloco vazio
+    }
+;
+
+/* Nova regra para acessos a arrays */
+array_access:
+    ID LSBRACK expr RSBRACK {
+        $$ = createNode("array-access", createLeaf("id", $1), $3);
     }
 ;
 
@@ -147,6 +188,18 @@ expr:
     }
     | expr GT expr {
         $$ = createNode("gt", $1, $3);
+    }
+    | DECREMENT ID {
+        $$ = createNode("decrement", createLeaf("id", $2), NULL);
+    }
+    | INCREMENT ID {
+        $$ = createNode("increment", createLeaf("id", $2), NULL);
+    }
+    | ID LSBRACK expr RSBRACK {
+        $$ = createNode("array-access", createLeaf("id", $1), $3);
+    }
+    | array_access ASSIGN expr {
+        $$ = createNode("assign", $1, $3);
     }
     | NUM {
         char buffer[20];

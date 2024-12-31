@@ -19,6 +19,7 @@ number          {digit}+
 "if"            { return IF; }
 "else"          { return ELSE; }
 "while"         { return WHILE; }
+"for"			{ return FOR; }
 "return"        { return RETURN; }
 "int"           { return INT; }
 "void"          { return VOID; }
@@ -27,6 +28,8 @@ number          {digit}+
 "-"             { return MINUS; }
 "*"             { return MULT; }
 "/"             { return DIV; }
+"--"			{ return DECREMENT; }
+"++"			{ return INCREMENT; }
 
 "="             { return ASSIGN; }
 "=="            { return EQ; }

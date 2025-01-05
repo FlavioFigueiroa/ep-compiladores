@@ -32,7 +32,7 @@ extern ASTNode *root;
 }
 
 /* Associe os tipos dos símbolos aos campos no %union */
-%type <node> param param_list params program decl_list decl stmt_list stmt expr cond loop block array_access
+%type <node> param param_list params program decl_list decl stmt_list stmt expr cond loop block array_access var_list var update_expr
 %type <string> type_specifier ID
 %type <number> NUM
 
@@ -57,14 +57,32 @@ decl_list:
 ;
 
 decl:
-    type_specifier ID SEMI {
-        $$ = createNode("decl", createLeaf("type", $1), createLeaf("id", $2));
+    type_specifier var_list SEMI {
+        $$ = createNode("var-decl", createLeaf("type", $1), $2);
     }
     | type_specifier ID LPAREN RPAREN block {
         $$ = createNode("function", createLeaf("id", $2), $5);
     }
     | type_specifier ID LPAREN params RPAREN block {
         $$ = createNode("function", createLeaf("id", $2), $6);
+    }
+;
+
+var:
+    ID {
+        $$ = createLeaf("id", $1);
+    }
+    | ID LSBRACK expr RSBRACK {
+        $$ = createNode("array-access", createLeaf("id", $1), $3);
+    }
+;
+
+var_list:
+    var_list COMMA ID {
+        $$ = appendNode($1, createLeaf("id", $3));
+    }
+    | ID {
+        $$ = createLeaf("id", $1);
     }
 ;
 
@@ -119,11 +137,23 @@ stmt_list:
 ;
 
 stmt:
-    expr SEMI {
+    var ASSIGN expr SEMI {
+        $$ = createNode("assign", $1, $3);
+    }
+    | var INCREMENT SEMI {
+        $$ = createNode("post-increment", $1, NULL);
+    }
+    | var DECREMENT SEMI {
+        $$ = createNode("post-decrement", $1, NULL);
+    }
+    | expr SEMI {
         $$ = $1;
     }
     | RETURN expr SEMI {
         $$ = createNode("return", $2, NULL);
+    }
+    | RETURN SEMI {
+        $$ = createNode("return", NULL, NULL);
     }
     | cond
     | loop
@@ -139,15 +169,27 @@ cond:
     }
 ;
 
+update_expr:
+    INCREMENT var {
+        $$ = createNode("increment", $2, NULL);
+    }
+    | DECREMENT var {
+        $$ = createNode("decrement", $2, NULL);
+    }
+    | expr {
+        $$ = $1;
+    }
+;
+
+
 loop:
     WHILE LPAREN expr RPAREN stmt {
         $$ = createNode("while", $3, $5);
     }
-    | FOR LPAREN expr SEMI expr SEMI expr RPAREN stmt {
+    | FOR LPAREN expr SEMI expr SEMI update_expr RPAREN stmt {
         ASTNode *initNode = createNode("init", $3, NULL);
         ASTNode *condNode = createNode("condition", $5, NULL);
-        ASTNode *updateNode = createNode("update", $7, NULL);
-        $$ = createNode("for", initNode, createNode("for-body", condNode, createNode("update", updateNode, $9)));
+        $$ = createNode("for", initNode, createNode("for-body", condNode, createNode("update", $7, $9)));
     }
 ;
 
@@ -189,11 +231,11 @@ expr:
     | expr GT expr {
         $$ = createNode("gt", $1, $3);
     }
-    | DECREMENT ID {
-        $$ = createNode("decrement", createLeaf("id", $2), NULL);
+    | expr EQ expr {
+        $$ = createNode("eq", $1, $3);
     }
-    | INCREMENT ID {
-        $$ = createNode("increment", createLeaf("id", $2), NULL);
+    | expr NEQ expr {
+        $$ = createNode("neq", $1, $3);
     }
     | ID LSBRACK expr RSBRACK {
         $$ = createNode("array-access", createLeaf("id", $1), $3);

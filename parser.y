@@ -32,7 +32,7 @@ extern ASTNode *root;
 }
 
 /* Associe os tipos dos símbolos aos campos no %union */
-%type <node> param param_list params program decl_list decl stmt_list stmt expr cond loop block array_access var_list var update_expr
+%type <node> param param_list params program decl_list decl stmt_list stmt expr cond loop block array_access var_list var update_expr arg_list
 %type <string> type_specifier ID
 %type <number> NUM
 
@@ -72,17 +72,20 @@ var:
     ID {
         $$ = createLeaf("id", $1);
     }
+    | ID ASSIGN expr {
+        $$ = createNode("var-init", createLeaf("id", $1), $3);
+    }
     | ID LSBRACK expr RSBRACK {
         $$ = createNode("array-access", createLeaf("id", $1), $3);
     }
 ;
 
 var_list:
-    var_list COMMA ID {
-        $$ = appendNode($1, createLeaf("id", $3));
+    var_list COMMA var {
+        $$ = appendNode($1, $3);
     }
-    | ID {
-        $$ = createLeaf("id", $1);
+    | var {
+        $$ = $1;
     }
 ;
 
@@ -113,6 +116,21 @@ param:
     }
     | type_specifier ID LSBRACK RSBRACK {
         $$ = createNode("param-array", createLeaf("type", $1), createLeaf("id", $2));
+    }
+    | type_specifier LSBRACK RSBRACK ID {
+        $$ = createNode("param-array", createLeaf("type", $1), createLeaf("id", $4));
+    }
+;
+
+arg_list:
+    arg_list COMMA expr {
+        $$ = appendNode($1, $3);
+    }
+    | expr {
+        $$ = $1;
+    }
+    | /* vazio */ {
+        $$ = NULL;  // Nenhum argumento
     }
 ;
 
@@ -210,7 +228,10 @@ array_access:
 ;
 
 expr:
-    ID ASSIGN expr {
+    MINUS expr %prec MINUS {
+        $$ = createNode("neg", $2, NULL);
+    }
+    | ID ASSIGN expr {
         $$ = createNode("assign", createLeaf("id", $1), $3);
     }
     | expr PLUS expr {
@@ -231,6 +252,12 @@ expr:
     | expr GT expr {
         $$ = createNode("gt", $1, $3);
     }
+    | expr LE expr {
+        $$ = createNode("le", $1, $3);
+    }
+    | expr GE expr {
+        $$ = createNode("ge", $1, $3);
+    }
     | expr EQ expr {
         $$ = createNode("eq", $1, $3);
     }
@@ -250,6 +277,9 @@ expr:
     }
     | ID {
         $$ = createLeaf("id", $1);
+    }
+    | ID LPAREN arg_list RPAREN {
+        $$ = createNode("func-call", createLeaf("id", $1), $3);
     }
     | LPAREN expr RPAREN {
         $$ = $2;  // Ignorar parênteses

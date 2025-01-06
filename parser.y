@@ -164,6 +164,9 @@ stmt:
     | var DECREMENT SEMI {
         $$ = createNode("post-decrement", $1, NULL);
     }
+    | decl {
+        $$ = $1;  // Aceita declarações dentro de blocos
+    }
     | expr SEMI {
         $$ = $1;
     }
@@ -296,10 +299,17 @@ void yyerror(const char *s) {
 ASTNode *root = NULL;  // Raiz da ASA
 
 int main() {
-    if (yyparse() == 0) {  // Retorna 0 se a análise for bem-sucedida
-        printf("Árvore de Sintaxe Abstrata (ASA):\n");
-        printAST(root);  // Imprime a ASA gerada
-        printf("\n");
+    if (yyparse() == 0) {
+        printf("Análise concluída com sucesso.\n");
+        FILE *outputFile = fopen("output.asm", "w");
+        if (outputFile) {
+            printAST(root);
+            generateMIPS(root, outputFile);
+            fclose(outputFile);
+            printf("Código Assembly MIPS gerado em 'output.asm'.\n");
+        } else {
+            fprintf(stderr, "Erro ao abrir o arquivo para saída.\n");
+        }
     } else {
         printf("Erro durante a análise sintática.\n");
     }

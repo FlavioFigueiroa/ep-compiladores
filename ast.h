@@ -14,4 +14,9 @@ ASTNode *createLeaf(char *type, char *value);
 ASTNode *appendNode(ASTNode *list, ASTNode *node);
 void printAST(ASTNode *root);
 
+// Funções para geração de código
+void generateMIPS(ASTNode *root, FILE *outputFile);
+char *generateLabel();
+
+
 #endif
